@@ -1,0 +1,9 @@
+tensorflow
+keras
+numpy
+scipy
+h5py
+pickle
+bs4
+urllib2
+matplotlib
