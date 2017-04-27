@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-21 03:19:48
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-25 14:26:42
+# @Last Modified time: 2017-04-26 05:37:12
 
 import numpy as np
 from keras.models import Sequential
@@ -61,20 +61,29 @@ for i in range(config.LAYER_NUM - 1):
 model.add(TimeDistributed(Dense(config.VOCAB_SIZE)))
 model.add(Activation('softmax'))
 
+# open file handle
+f = open(config.ANALYSIS_FILE,"w")
+
 # load the network weights
 filepath = config.CHKPT_PATH
 for filename in glob.glob(os.path.join(filepath, '*.hdf5')):
 	print(os.path.basename(filename)[:-5])
+	f.write(os.path.basename(filename)[:-5]+"\n")
 	model.load_weights(filename)
 	model.compile(loss='categorical_crossentropy', optimizer='adam')
 
 	output = ""
 	length = 0
-	alpha_dict = string.ascii_letters
+	alpha_dict = string.ascii_lowercase
 	while length < config.LEN_TO_GEN_2:
-		seed_char = alpha_dict[np.random.randint(45)]
+		seed_char = alpha_dict[np.random.randint(23)]
 		text,i = generate(seed_char)
 		length = length + i
-		output = output + text
+		output = output + "\n".join(s.capitalize() for s in text.split("\n"))
 
 	print(output)
+	f.write(output+"\n")
+
+# close file handle
+f.close()
+print( "Saved in analysis.txt file!" )

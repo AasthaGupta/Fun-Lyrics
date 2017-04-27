@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-19 08:21:36
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-25 14:23:56
+# @Last Modified time: 2017-04-27 23:59:57
 
 import config
 import string
@@ -60,6 +60,16 @@ def build_dataset():
 		with open(config.DATA_FILE,'w') as f:
 			f.write(data)
 
+	s=0
+	c=0
+	for line in data.split("\n"):
+		l=len(line.strip())
+		# print(l)
+		s+=l
+		c+=1
+	avg = s//c
+	print(avg)
+
 
 	chars = sorted(list(set(data)))
 	# map integer to char and a reverse lookup table
@@ -85,7 +95,7 @@ def build_dataset():
 
 	# make input and output pairs from the data
 	X = np.zeros((config.NUM_SEQ, config.SEQ_LENGTH, config.VOCAB_SIZE))
-	Y = np.zeros((config.NUM_SEQ, config.SEQ_LENGTH, config.VOCAB_SIZE))
+	Y = np.zeros((config.NUM_SEQ, config.VOCAB_SIZE))
 	for i in range(config.NUM_SEQ):
 		X_sequence = data[i*config.SEQ_LENGTH : (i+1)*config.SEQ_LENGTH]
 		X_sequence_int = [char_to_int[c] for c in X_sequence]
@@ -94,13 +104,13 @@ def build_dataset():
 			input_sequence[j][X_sequence_int[j]] = 1.
 		X[i] = input_sequence
 
-		Y_sequence = data[i*config.SEQ_LENGTH + 1 : (i+1)*config.SEQ_LENGTH + 1]
+		Y_sequence = data[(i+1)*config.SEQ_LENGTH]
 		Y_sequence_int = [char_to_int[c] for c in Y_sequence]
-		target_sequence = np.zeros((config.SEQ_LENGTH, config.VOCAB_SIZE))
-		for j in range(config.SEQ_LENGTH):
-			target_sequence[j][Y_sequence_int[j]] = 1.
+		target_sequence = np.zeros((config.VOCAB_SIZE))
+		target_sequence[Y_sequence_int[0]] = 1.
 		Y[i] = target_sequence
 
+	# print(X,Y)
 	return X,Y
 
 if __name__ == "__main__":

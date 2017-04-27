@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-18 12:13:33
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-25 14:26:24
+# @Last Modified time: 2017-04-28 04:33:57
 
 import numpy as np
 from keras.models import load_model
@@ -10,6 +10,7 @@ import pickle
 import config
 import os
 import string
+import argparse
 
 model = None
 int_to_char = None
@@ -71,6 +72,9 @@ def generate_text():
 	global char_to_int
 	global int_to_char
 
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-s","--seed", type=str, help="seed to generate text", default="life in the city,")
+
 	load_saved_model()
 	print ("Loaded saved LSTM Network")
 	load_mapping()
@@ -78,21 +82,54 @@ def generate_text():
 
 	print ("Generating Lyrics....")
 
-	output = ""
-	length = 0
-	alpha_dict = string.ascii_lowercase
-	while length < config.LEN_TO_GEN:
-		# pick a random seed that is alphabet
-		seed_char = alpha_dict[np.random.randint(23)]
-		text,i = generate(seed_char)
-		length = length + i
-		output = output + text
+	seed = parser.parse_args().seed
+	print (len(seed))
+	output = seed
+
+	padding = ""
+	for i in range(config.SEQ_LENGTH-len(seed)):
+		padding = padding + " "
+
+
+	X_sequence = padding + seed
+	X_sequence_int = [char_to_int[c] for c in X_sequence]
+
+
+	for i in range(config.LEN_TO_GEN):
+		input_sequence = np.zeros((1, config.SEQ_LENGTH, config.VOCAB_SIZE))
+		for j in range(config.SEQ_LENGTH):
+			input_sequence[0][j][X_sequence_int[j]] = 1.
+		Y = model.predict(input_sequence)
+		next_int = np.argmax(Y, 1)[-1]
+		next_char = int_to_char[next_int]
+		# print(next_int,next_char)
+		output = output + next_char
+		del(X_sequence_int[0])
+		X_sequence_int.append(next_int)
+
+
+
+	# output = ""
+	# length = 0
+	# alpha_dict = string.ascii_lowercase
+	# while length < config.LEN_TO_GEN:
+	# 	# pick a random seed that is alphabet
+	# 	seed_char = alpha_dict[np.random.randint(23)]
+	# 	text,i = generate(seed_char)
+	# 	length = length + i
+	# 	output = output + "\n".join(s.capitalize() for s in text.split("\n"))
+
+	# format output
+	output = "\n".join(s.capitalize() for s in output.split("\n"))
+
+	# print output
+	print(output)
 
 	# save generated lyrics in output file
 	output_filename = config.OUTPUT_FILE
 	with open(output_filename,"w") as f:
 		f.write(output)
-	print( "See fun.txt file! :)" )
+	print( "Saved in fun.txt file! :)" )
 
 if __name__ == "__main__":
     generate_text()

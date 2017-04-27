@@ -1,7 +1,6 @@
 tensorflow
 keras
 numpy
-scipy
 h5py
 pickle
 bs4
