@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-18 12:13:33
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-28 04:33:57
+# @Last Modified time: 2017-05-19 05:47:30
 
 import numpy as np
 from keras.models import load_model
@@ -73,7 +73,7 @@ def generate_text():
 	global int_to_char
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-s","--seed", type=str, help="seed to generate text", default="life in the city,")
+	parser.add_argument("-s","--seed", type=str, help="seed to generate text", default="life")
 
 	load_saved_model()
 	print ("Loaded saved LSTM Network")

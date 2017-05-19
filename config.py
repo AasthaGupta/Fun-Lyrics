@@ -2,18 +2,19 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-19 08:23:18
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-28 03:56:42
+# @Last Modified time: 2017-05-19 09:40:21
 
 import pickle
 import os
 
 
-# change artist name and url
-ARTIST_NAME = "taylor swift"
-URL = "http://www.metrolyrics.com/taylor-swift-lyrics.html"
+# Artists list and File name
+ARTISTS = ["rihanna","ed sheeran","beatles","coldplay","elvis presley"]
+FILE_NAME = "mashup"
 
+BASE_URL = "http://www.metrolyrics.com/"
 RESOURCE_PATH = "resources/"
-PATH = os.path.join(RESOURCE_PATH,ARTIST_NAME)
+PATH = os.path.join(RESOURCE_PATH,FILE_NAME)
 
 # make directory for artist if doesn't exist
 if not os.path.exists(PATH):
@@ -42,27 +43,43 @@ else:
 
 SEED = 7
 
-SEQ_LENGTH = 36
+# number of layers in the network
+LAYER_NUM = 3
 
 # number of units of LSTM
 HIDDEN_DIM = 256
-# number of layers in the network
-LAYER_NUM = 2
+
+# batch size
+BATCH_SIZE = 150
+
+SEQ_LENGTH = 26
+
+# Initial learning rate
+LR = 0.0001
+
 # number of epochs for training
 NUM_EPOCHS = 1000
-# batch size
-BATCH_SIZE = 100
-# Initial learning rate
-LR = 0.002
 
 # length of characters to generate
 LEN_TO_GEN = 700
 
-# length of characters to generate(for analysis.py)
+# length of characters to generate (for analysis.py)
 LEN_TO_GEN_2 = 250
 
 
-FLOYD = True
+
+
+#############################################################
+
+#############################################################
+#															#
+#				FLOYD CONFIGURATIONS                     	#
+#															#
+#############################################################
+
+#############################################################
+
+FLOYD = False
 # to train network on floyd
 if FLOYD:
 
@@ -70,7 +87,7 @@ if FLOYD:
 	LYRICS_FILE = "lyrics.txt"
 
 	RESOURCE_PATH = "/output/"
-	PATH = os.path.join(RESOURCE_PATH,ARTIST_NAME)
+	PATH = os.path.join(RESOURCE_PATH,FILE_NAME)
 	# make directory for artist if doesn't exist
 	if not os.path.exists(PATH):
 	    os.makedirs(PATH)

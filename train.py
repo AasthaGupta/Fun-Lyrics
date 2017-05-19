@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-18 02:08:44
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-28 04:39:02
+# @Last Modified time: 2017-05-19 05:46:00
 
 import numpy
 from keras.models import Sequential
@@ -27,20 +27,23 @@ numpy.random.seed(config.SEED)
 def create_model():
 
 	model = Sequential()
-	model.add(LSTM(120, input_shape=(config.SEQ_LENGTH, config.VOCAB_SIZE), return_sequences=True))
+
+	# define model's network here
+	model.add(LSTM(config.HIDDEN_DIM, input_shape=(config.SEQ_LENGTH, config.VOCAB_SIZE), return_sequences=True))
 	model.add(Dropout(0.2))
-	model.add(LSTM(128))
-	# for i in range(config.LAYER_NUM - 1):
-	# 	if i != config.LAYER_NUM - 2:
-	# 		model.add(LSTM(config.HIDDEN_DIM, return_sequences=True))
-	# 	else:
-	# 		model.add(LSTM(config.HIDDEN_DIM))
-	# 	model.add(Dropout(0.2))
-	model.add(Dense(200, activation = "tanh"))
-	model.add(Dropout(0.25))
+	for i in range(config.LAYER_NUM - 1):
+		if i != config.LAYER_NUM - 2:
+			model.add(LSTM(config.HIDDEN_DIM, return_sequences=True))
+		else:
+			model.add(LSTM(config.HIDDEN_DIM))
 	model.add(Dense(config.VOCAB_SIZE, activation = "softmax"))
-	optimizer = RMSprop(lr=config.LR)
-	model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=['accuracy'])
+
+	# define optimiser for the model
+	optimiser = Adam(lr=config.LR)
+
+	# compile this model
+	model.compile(loss="categorical_crossentropy", optimizer=optimiser, metrics=['accuracy'])
+
 	return model
 
 
@@ -61,20 +64,20 @@ class LearningRatePrinter(Callback):
 def train():
 
 	# to change learnig rate every 100 interations
-	def Scheduler(epoch):
-		lr = K.eval(model.optimizer.lr)
-		if epoch == 10:
-			new_lr = 0.0002
-		# elif epoch == 12:
-		# 	new_lr = 0.0001
-		# elif epoch == 25:
-		# 	new_lr = 0.002
-		elif epoch != 0 and epoch % 30 == 0:
-			new_lr = lr * 0.1
-		else:
-			new_lr = lr
-		model.optimizer.lr.assign(new_lr)
-		return new_lr
+	# def Scheduler(epoch):
+	# 	lr = K.eval(model.optimizer.lr)
+	# 	if epoch == 10:
+	# 		new_lr = lr * 0.1
+	# 	# elif epoch == 12:
+	# 	# 	new_lr = 0.0001
+	# 	# elif epoch == 25:
+	# 	# 	new_lr = 0.002
+	# 	elif epoch != 0 and epoch % 30 == 0:
+	# 		new_lr = lr * 0.1
+	# 	else:
+	# 		new_lr = lr
+	# 	model.optimizer.lr.assign(new_lr)
+	# 	return new_lr
 
 	X,Y = preprocess.build_dataset()
 	print('X shape:', X.shape)
@@ -95,12 +98,12 @@ def train():
 	# define the checkpoint and learning rate change
 	filepath = os.path.join(config.CHKPT_PATH,"weights-improvement-{epoch:03d}-{val_acc:.4f}.hdf5")
 	checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-	reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.5, patience=10, min_lr=0.000001)
+	reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.1, patience=10, min_lr=0.000001)
 	logfilepath=os.path.join(config.PATH,"logs.csv")
 	logger = CSVLogger(logfilepath)
 	stopper = EarlyStopping(monitor='val_acc', min_delta=0.00001, patience=15, verbose=1, mode='auto')
-	lr_change = LearningRateScheduler(Scheduler)
-	callbacks_list = [checkpoint, reduce_lr, logger, LearningRatePrinter(), stopper, lr_change]
+	# lr_change = LearningRateScheduler(Scheduler)
+	callbacks_list = [checkpoint, reduce_lr, logger, LearningRatePrinter(), stopper]
 
 	# fit the model
 	history = model.fit(X, Y,

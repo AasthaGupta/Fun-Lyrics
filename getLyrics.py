@@ -2,7 +2,7 @@
 # @Author: Aastha Gupta
 # @Date:   2017-04-18 01:43:41
 # @Last Modified by:   Aastha Gupta
-# @Last Modified time: 2017-04-26 03:37:48
+# @Last Modified time: 2017-05-18 20:16:15
 
 from urllib.request import urlopen
 import re
@@ -28,43 +28,46 @@ def saveLyrics(name, link):
 		print(str(e))
 
 def getData():
-
-	url_template = config.URL[:-11] + "alpage-{}.html"
-	page = 1
-	songs_count = 0
-
 	print ("Fetching lyrics...")
-	while True:
-		url = url_template.format(page)
-		try:
-			response = urlopen(url)
-			html = response.read()
-			response.close()
-			soup = BeautifulSoup(html,"html.parser")
+	for artist in config.ARTISTS:
+		artist_url = config.BASE_URL + "-".join([c.lower() for c in artist.split(" ")])
+		url_template =  artist_url + "-alpage-{}.html"
+		page = 1
+		songs_count = 0
 
-			songs_data = {}
-			a_tags = soup.findAll("a", attrs={"class":"title hasvidtable"})
-			for data in a_tags:
-				link = data["href"]
-				name = data.contents[0][1:-1].replace("Lyrics","")
-				name = re.sub(r'[\\\/*?:"<>|]', "", name)
-				songs_data[name]=link
-			print("Fetched songs list from page {}".format(page))
-			for key, value in songs_data.items():
-				saveLyrics(key, value)
-				songs_count += 1
+		print ("Fetching lyrics for", artist.title())
+		print (artist_url + "-lyrics.html")
+		while True:
+			url = url_template.format(page)
+			try:
+				response = urlopen(url)
+				html = response.read()
+				response.close()
+				soup = BeautifulSoup(html,"html.parser")
 
-			# to check if pages are left or not
-			end = soup.findAll("a", attrs={"class":"button next disabled"})
-			if end:
-				raise ValueError("Fetched lyrics")
+				songs_data = {}
+				a_tags = soup.findAll("a", attrs={"class":"title hasvidtable"})
+				for data in a_tags:
+					link = data["href"]
+					name = data.contents[0][1:-1].replace("Lyrics","")
+					name = re.sub(r'[\\\/*?:"<>|]', "", name)
+					songs_data[name]=link
+				for key, value in songs_data.items():
+					saveLyrics(key, value)
+					songs_count += 1
+				print("Fetched songs from page {}".format(page))
 
-			page += 1
-		except Exception as e:
-			print("Total songs fetched:", songs_count)
-			print( str(e) )
-			f.close()
-			break
+				# to check if pages are left or not
+				end = soup.findAll("a", attrs={"class":"button next disabled"})
+				if end:
+					raise ValueError("Fetched lyrics")
+
+				page += 1
+			except Exception as e:
+				print("Total songs fetched:", songs_count)
+				print( str(e) )
+				break
+	f.close()
 
 
 
